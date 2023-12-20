@@ -1,4 +1,4 @@
-package com.mateusjose98.management.usercases;
+package com.mateusjose98.management.services;
 
 import com.mateusjose98.management.model.enums.VerificationType;
 import lombok.extern.log4j.Log4j2;

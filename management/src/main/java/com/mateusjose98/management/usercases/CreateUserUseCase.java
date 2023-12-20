@@ -1,5 +1,7 @@
 package com.mateusjose98.management.usercases;
 
+import com.mateusjose98.management.api.UserDTO;
+import com.mateusjose98.management.api.UserDTOMapper;
 import com.mateusjose98.management.exceptions.CreateUserException;
 import com.mateusjose98.management.exceptions.ResourceAlreadyExistsException;
 import com.mateusjose98.management.model.Role;
@@ -7,6 +9,7 @@ import com.mateusjose98.management.model.User;
 import com.mateusjose98.management.model.enums.VerificationType;
 import com.mateusjose98.management.repository.RoleRepository;
 import com.mateusjose98.management.repository.UserRepository;
+import com.mateusjose98.management.services.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -33,18 +36,21 @@ public class CreateUserUseCase {
     final EmailService emailService;
 
 
-    public User execute(User user) {
+    public UserDTO execute(User user) {
         boolean emailAlreadyExists = userRepository.existsByEmail(user.getEmail().trim().toLowerCase()) > 0;
         if (emailAlreadyExists) throw new ResourceAlreadyExistsException(String.format("Usuário com email %s já existe!", user.getEmail()));
         try {
+
             String encoded = encoder.encode(user.getPassword().trim());
             user.setPassword(encoded);
             User saved = userRepository.create(user);
-            roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
+            String roleName = ROLE_USER.name();
+            Role role = roleRepository.getByName(roleName);
+            roleRepository.addRoleToUser(user.getId(), roleName);
             String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
             userRepository.createUserVerification(user.getId(), verificationUrl);
             sendEmail(user.getFirstName(), user.getEmail(), verificationUrl);
-            return user;
+            return UserDTOMapper.fromUser(saved, role);
         }catch ( Exception ex) {
             throw new CreateUserException(ex.getMessage());
         }

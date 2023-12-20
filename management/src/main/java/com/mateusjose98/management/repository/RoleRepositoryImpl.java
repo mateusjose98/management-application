@@ -78,7 +78,7 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
     public void updateUserRole(Long userId, String roleName) {
         log.info("Updating role for user id: {}", userId);
         try {
-            Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, of("name", roleName), new RoleRowMapper());
+            Role role = getByName(roleName);
             jdbc.update(UPDATE_USER_ROLE_QUERY, of("roleId", role.getId(), "userId", userId));
         } catch (EmptyResultDataAccessException exception) {
             throw new ResourceNotFoundException("No role found by name: " + roleName);
@@ -86,5 +86,10 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
             log.error(exception.getMessage());
             throw new RuntimeException("An error occurred. Please try again.");
         }
+    }
+
+    @Override
+    public Role getByName(String roleName) {
+       return jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, of("name", roleName), new RoleRowMapper());
     }
 }
