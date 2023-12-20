@@ -1,4 +1,4 @@
-# Requisitos da Aplicação
+# Backend
 
 ## Usuário da Aplicação
 
@@ -56,4 +56,4 @@
     - Baixar faturas em PDF
 
 ## Banco de dados:
-![img.png](schema.png)
+![img.png](management/schema.png)
