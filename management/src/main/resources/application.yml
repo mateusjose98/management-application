@@ -1,0 +1,26 @@
+
+spring:
+  datasource:
+    username: root
+    url: jdbc:mysql://localhost:3306/management_db?useTimezone=true&serverTimezone=America/Sao_Paulo
+    driverClassName: com.mysql.cj.jdbc.Driver
+    testWhileIdle: 'true'
+    validationQuery: SELECT 1
+    password: root
+  jpa:
+    generate-ddl: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  logging:
+    level:
+      net:
+        ttddyy:
+          dsproxy:
+            listener: debug
+  sql:
+    init:
+      continue-on-error: false
+      #mode: always
+      mode: never
