@@ -46,7 +46,7 @@ public class CreateUserUseCase {
             User saved = userRepository.create(user);
             String roleName = ROLE_USER.name();
             Role role = roleRepository.getByName(roleName);
-            roleRepository.addRoleToUser(user.getId(), roleName);
+            roleRepository.addRoleToUser(user.getId(), role);
             String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), ACCOUNT.getType());
             userRepository.createUserVerification(user.getId(), verificationUrl);
             sendEmail(user.getFirstName(), user.getEmail(), verificationUrl);

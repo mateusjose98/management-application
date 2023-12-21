@@ -1,4 +1,4 @@
-package io.getarrays.securecapita.query;
+package com.mateusjose98.management.query;
 
 
 public class RoleQuery {

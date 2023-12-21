@@ -13,14 +13,16 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-  logging:
-    level:
-      net:
-        ttddyy:
-          dsproxy:
-            listener: debug
+logging:
+  level:
+    net:
+      ttddyy:
+        dsproxy:
+          listener: debug
   sql:
     init:
       continue-on-error: false
       #mode: always
       mode: never
+jwt:
+  secret: 1b2d7a2079285f016ee03c922440bdfaa6cdc31ab0e0a9f98c018b6528ae78d4

@@ -4,8 +4,16 @@ package com.mateusjose98.management.api.resources;
 import com.mateusjose98.management.api.HttpResponse;
 import com.mateusjose98.management.api.UserDTO;
 import com.mateusjose98.management.api.UserDTOMapper;
+import com.mateusjose98.management.api.forms.LoginForm;
+import com.mateusjose98.management.commons.config.TokenProvider;
+import com.mateusjose98.management.model.NewUserEvent;
 import com.mateusjose98.management.model.User;
+import com.mateusjose98.management.model.UserPrincipal;
+import com.mateusjose98.management.services.EventService;
+import com.mateusjose98.management.services.RoleService;
 import com.mateusjose98.management.usercases.CreateUserUseCase;
+import com.mateusjose98.management.usercases.FindUserByEmailUseCase;
+import com.mateusjose98.management.usercases.SendVerificationCodeToUserUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -25,6 +33,10 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 
+import static com.mateusjose98.management.api.UserDTOMapper.toUser;
+import static com.mateusjose98.management.commons.UserUtils.getAuthenticatedUser;
+import static com.mateusjose98.management.commons.UserUtils.getLoggedInUser;
+import static com.mateusjose98.management.model.enums.EventType.*;
 import static java.time.LocalDateTime.now;
 import static java.util.Map.of;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -37,17 +49,17 @@ import static org.springframework.web.servlet.support.ServletUriComponentsBuilde
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 public class UserResource {
-//    private static final String TOKEN_PREFIX = "Bearer ";
+    private static final String TOKEN_PREFIX = "Bearer ";
     private final CreateUserUseCase createUser;
-//    private final RoleService roleService;
-//    private final EventService eventService;
-//    private final AuthenticationManager authenticationManager;
-//    private final TokenProvider tokenProvider;
+    private final RoleService roleService;
+    private final EventService eventService;
+    private final AuthenticationManager authenticationManager;
+    private final TokenProvider tokenProvider;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final ApplicationEventPublisher publisher;
-
-
+    private final FindUserByEmailUseCase findUserByEmailUseCase;
+    private final SendVerificationCodeToUserUseCase sendVerificationCodeToUser;
 
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user)  {
@@ -61,24 +73,52 @@ public class UserResource {
                         .statusCode(CREATED.value())
                         .build());
     }
-//    @PostMapping("/login")
-//    public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
-//        UserDTO user = authenticate(loginForm.getEmail(), loginForm.getPassword());
-//        return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
-//    }
+    @PostMapping("/login")
+    public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
+        UserDTO user = authenticate(loginForm.getEmail(), loginForm.getPassword());
+        return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
+    }
+    private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO user) {
+        sendVerificationCodeToUser.execute(user);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .data(of("user", user))
+                        .message("Verification Code Sent")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
 
-//    @GetMapping("/profile")
-//    public ResponseEntity<HttpResponse> profile(Authentication authentication) {
-//        UserDTO user = userService.getUserByEmail(getAuthenticatedUser(authentication).getEmail());
-//        return ResponseEntity.ok().body(
-//                HttpResponse.builder()
-//                        .timeStamp(now().toString())
-//                        .data(of("user", user, "events", eventService.getEventsByUserId(user.getId()), "roles", roleService.getRoles()))
-//                        .message("Profile Retrieved")
-//                        .status(OK)
-//                        .statusCode(OK.value())
-//                        .build());
-//    }
+    private ResponseEntity<HttpResponse> sendResponse(UserDTO user) {
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .data(of("user", user, "access_token", tokenProvider.createAccessToken(getUserPrincipal(user))
+                                , "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(user))))
+                        .message("Login Success")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
+
+    private UserPrincipal getUserPrincipal(UserDTO user) {
+        return new UserPrincipal(toUser(findUserByEmailUseCase.execute(user.getEmail())),
+                roleService.getRoleByUserId(user.getId()));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<HttpResponse> profile(Authentication authentication) {
+        UserDTO user = findUserByEmailUseCase.execute(getAuthenticatedUser(authentication).getEmail());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .data(of("user", user, "events", eventService.getEventsByUserId(user.getId()), "roles", roleService.getRoles()))
+                        .message("Profile Retrieved")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
 //
 //    @PatchMapping("/update")
 //    public ResponseEntity<HttpResponse> updateUser(@RequestBody @Valid UpdateForm user) {
@@ -300,26 +340,25 @@ public class UserResource {
                 .build(), NOT_FOUND);
     }*/
 
-//    private UserDTO authenticate(String email, String password) {
-//        UserDTO userByEmail = userService.getUserByEmail(email);
-//        try {
-//            if(null != userByEmail) {
-//                publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT));
-//            }
-//            Authentication authentication = authenticationManager.authenticate(unauthenticated(email, password));
-//            UserDTO loggedInUser = getLoggedInUser(authentication);
-//            if(!loggedInUser.isUsingMfa()) {
-//                publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT_SUCCESS));
-//            }
-//            return loggedInUser;
-//        } catch (Exception exception) {
-//            if(null != userByEmail) {
-//                publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT_FAILURE));
-//            }
-//            processError(request, response, exception);
-//            throw new ApiException(exception.getMessage());
-//        }
-//    }
+    private UserDTO authenticate(String email, String password) {
+        UserDTO userByEmail = findUserByEmailUseCase.execute(email);
+        try {
+            if(null != userByEmail) {
+                publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT));
+            }
+            Authentication authentication = authenticationManager.authenticate(unauthenticated(email, password));
+            UserDTO loggedInUser = getLoggedInUser(authentication);
+            if(!loggedInUser.isUsingMfa()) {
+                publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT_SUCCESS));
+            }
+            return loggedInUser;
+        } catch (Exception exception) {
+            if(null != userByEmail) {
+                publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT_FAILURE));
+            }
+            throw new RuntimeException(exception.getMessage());
+        }
+    }
 
     private URI getUri() {
         return URI.create(fromCurrentContextPath().path("/user/get/<userId>").toUriString());

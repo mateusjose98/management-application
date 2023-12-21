@@ -13,4 +13,6 @@ public interface UserRepository<T extends User> {
     Boolean delete(Long id);
     Integer existsByEmail(String lowerCase);
     void createUserVerification(Long userId, String verificationUrl);
+
+    User getUserByEmail(String email);
 }

@@ -12,10 +12,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Map;
+
+import static com.mateusjose98.management.query.RoleQuery.*;
 import static java.util.Map.of;
 
 import static com.mateusjose98.management.model.enums.RoleType.ROLE_USER;
-import static io.getarrays.securecapita.query.RoleQuery.*;
+
 import static java.util.Objects.requireNonNull;
 
 @Repository
@@ -46,6 +48,20 @@ public class RoleRepositoryImpl implements RoleRepository<Role> {
         log.info("Adding role {} to user id: {}", roleName, userId);
         try {
             Role role = jdbc.queryForObject(SELECT_ROLE_BY_NAME_QUERY, Map.of("name", roleName), new RoleRowMapper());
+            jdbc.update(INSERT_ROLE_TO_USER_QUERY, Map.of("userId", userId, "roleId", requireNonNull(role).getId()));
+        } catch (EmptyResultDataAccessException exception) {
+            throw new ResourceNotFoundException("Role não encontrada: " + ROLE_USER.name());
+
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new RuntimeException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public void addRoleToUser(Long userId, Role role) {
+        log.info("Adding role {} to user id: {}", role, userId);
+        try {
             jdbc.update(INSERT_ROLE_TO_USER_QUERY, Map.of("userId", userId, "roleId", requireNonNull(role).getId()));
         } catch (EmptyResultDataAccessException exception) {
             throw new ResourceNotFoundException("Role não encontrada: " + ROLE_USER.name());

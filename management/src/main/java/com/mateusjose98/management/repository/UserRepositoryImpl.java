@@ -2,6 +2,7 @@ package com.mateusjose98.management.repository;
 
 import com.mateusjose98.management.model.Role;
 import com.mateusjose98.management.model.User;
+import com.mateusjose98.management.repository.rowmapper.UserRowMapper;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class UserRepositoryImpl implements UserRepository<User> {
 
     @Override
     public User get(Long id) {
-        return null;
+        return jdbcTemplate.queryForObject(SELECT_USER_BY_ID_QUERY, Map.of("id", id), new UserRowMapper());
     }
 
     @Override
@@ -61,12 +62,18 @@ public class UserRepositoryImpl implements UserRepository<User> {
 
     @Override
     public Integer existsByEmail(String email) {
-        return jdbcTemplate.queryForObject(COUNT_USER_EMAIL_QUERY, Map.of("email", email), Integer.class);
+        return jdbcTemplate.queryForObject(SELECT_USER_BY_ID_QUERY, Map.of("email", email), Integer.class);
     }
 
     public void createUserVerification(Long userId, String verificationUrl) {
         jdbcTemplate.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, of("userId", userId, "url", verificationUrl));
     }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return jdbcTemplate.queryForObject(SELECT_USER_BY_EMAIL_QUERY, Map.of("email", email),  new UserRowMapper());
+    }
+
 
     private SqlParameterSource getSqlParameterSource(User user) {
         return new MapSqlParameterSource()
