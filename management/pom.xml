@@ -86,7 +86,12 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>${apache.commons.version}</version>
-
+		</dependency>
+		<dependency>
+			<groupId>com.twilio.sdk</groupId>
+			<artifactId>twilio</artifactId>
+			<version>9.2.0</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

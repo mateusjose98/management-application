@@ -25,4 +25,8 @@ logging:
       #mode: always
       mode: never
 jwt:
-  secret: 1b2d7a2079285f016ee03c922440bdfaa6cdc31ab0e0a9f98c018b6528ae78d4
+  secret: ${JWT_SECRET}
+
+fromNumber: ${TWILLIO_FROM_NUMBER}
+sidKey: ${TWILLIO_SID}
+tokenKey: ${TWILLIO_TOKEN}
