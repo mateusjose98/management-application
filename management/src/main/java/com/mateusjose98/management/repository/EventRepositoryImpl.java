@@ -29,12 +29,9 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
-    public void addUserEvent(String email, EventType eventType, String device, String ipAddress) {
-        jdbc.update(INSERT_EVENT_BY_USER_EMAIL_QUERY, of("email", email, "type", eventType.toString(), "device", device, "ipAddress", ipAddress));
+    public void addUserEvent(String email, EventType eventType, String ipAddress) {
+        jdbc.update(INSERT_EVENT_BY_USER_EMAIL_QUERY, of("email", email, "event", eventType.toString(), "ipAddress", ipAddress));
     }
 
-    @Override
-    public void addUserEvent(Long userId, EventType eventType, String device, String ipAddress) {
 
-    }
 }

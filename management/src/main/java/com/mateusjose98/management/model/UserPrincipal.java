@@ -2,8 +2,6 @@ package com.mateusjose98.management.model;
 
 
 import com.mateusjose98.management.api.UserDTO;
-import com.mateusjose98.management.model.Role;
-import com.mateusjose98.management.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -58,7 +56,7 @@ public class UserPrincipal implements UserDetails {
         return this.user.isEnabled();
     }
 
-    public UserDTO getUser() {
+    public UserDTO getDtoFromUser() {
         return fromUser(this.user, role);
     }
 }

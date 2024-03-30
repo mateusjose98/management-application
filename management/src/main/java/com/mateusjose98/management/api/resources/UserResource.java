@@ -6,6 +6,7 @@ import com.mateusjose98.management.api.UserDTO;
 import com.mateusjose98.management.api.UserDTOMapper;
 import com.mateusjose98.management.api.forms.LoginForm;
 import com.mateusjose98.management.commons.config.TokenProvider;
+import com.mateusjose98.management.exceptions.UserAuthException;
 import com.mateusjose98.management.model.NewUserEvent;
 import com.mateusjose98.management.model.User;
 import com.mateusjose98.management.model.UserPrincipal;
@@ -91,11 +92,12 @@ public class UserResource {
     }
 
     private ResponseEntity<HttpResponse> sendResponse(UserDTO user) {
+        UserPrincipal userPrincipal = getUserPrincipal(user);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
-                        .data(of("user", user, "access_token", tokenProvider.createAccessToken(getUserPrincipal(user))
-                                , "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(user))))
+                        .data(of("user", user, "access_token", tokenProvider.createAccessToken(userPrincipal)
+                                , "refresh_token", tokenProvider.createRefreshToken(userPrincipal)))
                         .message("Login Success")
                         .status(OK)
                         .statusCode(OK.value())
@@ -343,9 +345,6 @@ public class UserResource {
     private UserDTO authenticate(String email, String password) {
         UserDTO userByEmail = findUserByEmailUseCase.execute(email);
         try {
-            if(null != userByEmail) {
-                publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT));
-            }
             Authentication authentication = authenticationManager.authenticate(unauthenticated(email, password));
             UserDTO loggedInUser = getLoggedInUser(authentication);
             if(!loggedInUser.isUsingMfa()) {
@@ -356,7 +355,7 @@ public class UserResource {
             if(null != userByEmail) {
                 publisher.publishEvent(new NewUserEvent(email, LOGIN_ATTEMPT_FAILURE));
             }
-            throw new RuntimeException(exception.getMessage());
+            throw new UserAuthException(exception.getMessage());
         }
     }
 

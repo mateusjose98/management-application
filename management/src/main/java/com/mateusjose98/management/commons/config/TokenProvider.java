@@ -11,7 +11,6 @@ import com.mateusjose98.management.model.UserPrincipal;
 import com.mateusjose98.management.usercases.FindUserByIdUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class TokenProvider {
     public static final String AUTHORITIES = "authorities";
-    private static final String GET_ARRAYS_LLC = "GET_ARRAYS_LLC";
+    private static final String GET_ARRAYS_LLC = "Projeto";
     private static final String CUSTOMER_MANAGEMENT_SERVICE = "CUSTOMER_MANAGEMENT_SERVICE";
     private static final long ACCESS_TOKEN_EXPIRATION_TIME = 432_000_000; //1_800_000;
     private static final long REFRESH_TOKEN_EXPIRATION_TIME = 432_000_000;
@@ -46,14 +45,14 @@ public class TokenProvider {
 
     public String createAccessToken(UserPrincipal userPrincipal) {
         return JWT.create().withIssuer(GET_ARRAYS_LLC).withAudience(CUSTOMER_MANAGEMENT_SERVICE)
-                .withIssuedAt(new Date()).withSubject(String.valueOf(userPrincipal.getUser().getId())).withArrayClaim(AUTHORITIES, getClaimsFromUser(userPrincipal))
+                .withIssuedAt(new Date()).withSubject(String.valueOf(userPrincipal.getDtoFromUser().getId())).withArrayClaim(AUTHORITIES, getClaimsFromUser(userPrincipal))
                 .withExpiresAt(new Date(currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(secret.getBytes()));
     }
 
     public String createRefreshToken(UserPrincipal userPrincipal) {
         return JWT.create().withIssuer(GET_ARRAYS_LLC).withAudience(CUSTOMER_MANAGEMENT_SERVICE)
-                .withIssuedAt(new Date()).withSubject(String.valueOf(userPrincipal.getUser().getId()))
+                .withIssuedAt(new Date()).withSubject(String.valueOf(userPrincipal.getDtoFromUser().getId()))
                 .withExpiresAt(new Date(currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(secret.getBytes()));
 

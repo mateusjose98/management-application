@@ -1,7 +1,6 @@
 package com.mateusjose98.management.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +19,8 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 @JsonInclude(NON_DEFAULT)
 public class UserEvent {
     private Long id;
-    private String type;
+    private String event;
     private String description;
-    private String device;
     private String ipAddress;
     private LocalDateTime createdAt;
 }

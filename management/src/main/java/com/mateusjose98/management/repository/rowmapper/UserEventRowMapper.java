@@ -14,9 +14,8 @@ public class UserEventRowMapper implements RowMapper<UserEvent> {
     public UserEvent mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         return UserEvent.builder()
                 .id(resultSet.getLong("id"))
-                .type(resultSet.getString("type"))
+                .event(resultSet.getString("type"))
                 .description(resultSet.getString("description"))
-                .device(resultSet.getString("device"))
                 .ipAddress(resultSet.getString("ip_address"))
                 .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
                 .build();

@@ -11,6 +11,6 @@ public class UserUtils {
     }
 
     public static UserDTO getLoggedInUser(Authentication authentication) {
-        return ((UserPrincipal) authentication.getPrincipal()).getUser();
+        return ((UserPrincipal) authentication.getPrincipal()).getDtoFromUser();
     }
 }

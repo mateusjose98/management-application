@@ -21,12 +21,8 @@ public class EventService {
     }
 
 
-    public void addUserEvent(String email, EventType eventType, String device, String ipAddress) {
-        eventRepository.addUserEvent(email, eventType, device, ipAddress);
+    public void addUserEvent(String email, EventType eventType, String ipAddress) {
+        eventRepository.addUserEvent(email, eventType, ipAddress);
     }
 
-
-    public void addUserEvent(Long userId, EventType eventType, String device, String ipAddress) {
-
-    }
 }

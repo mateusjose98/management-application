@@ -25,8 +25,8 @@ logging:
       #mode: always
       mode: never
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:bfc8f20e0a8e7dce1596a8091da0754f9d169199f2cbdf3fd8b618da8810677a}
 
-fromNumber: ${TWILLIO_FROM_NUMBER}
-sidKey: ${TWILLIO_SID}
-tokenKey: ${TWILLIO_TOKEN}
+fromNumber: ${TWILLIO_FROM_NUMBER:seunumeroaqui}
+sidKey: ${TWILLIO_SID:seusidaqui}
+tokenKey: ${TWILLIO_TOKEN:seutokenaqui}
